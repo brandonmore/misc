@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">
+    body,html {
+        margin:0;
+        padding:0;
+    }
+    .maze {
+        width: 20px;
+        height:20px;
+        background-color:blue;
+        position:absolute;
+    }
+    .hero {
+        width:10px;
+        height:10px;
+        background-color:red;
+    }
+</style>
+</head>
+<body>
+<script>
+    var Maze = function(){
+        this.map_array = [];
+        this.wall_dim = {
+            x: 20,
+            y: 20
+        };
+        this.init();
+    }
+    Maze.prototype.init = function(){
+        var obj = this;
+        obj.max_blocks = 100000;
+        obj.bounds = {
+            x: [0,window.innerWidth-obj.wall_dim.x],
+            y: [0,window.innerHeight-obj.wall_dim.y]
+        };
+        obj.block_nodes = [];
+        //console.log('bounds');
+        //console.log(obj.bounds);
+        obj.createMapArray();
+
+        //obj.drawBlock(0,0);
+    }
+
+    Maze.prototype.createMapArray = function(){
+        var obj = this,
+            arr = obj.map_array,
+            ww = this.wall_dim.x,
+            wh = this.wall_dim.y,
+            bnds = obj.bounds,
+            dir_x = 1,
+            dir_y = 1,
+            dir = 'x',
+            switchDir = function(){
+                var temp_dir = Math.round(Math.random()) == 1 ? 'x' : 'y';
+                dir = temp_dir;
+            }
+        if(!arr.length){
+            arr.push([0,0]);
+            bnds.y[0] += wh;
+        }
+        for(var i=0;i<obj.max_blocks;i++){
+            var last = arr[i],
+                x = 0,
+                y = 0;
+            //this can def be better
+            //bounds check
+            if(dir == 'x'){
+                if(dir_x == 1 && bnds.x[1] - last[0] < ww){
+                    dir_x = -1;
+                    //bnds.x[1] -= ww;
+                    dir = 'y';
+                    //console.log(bnds);
+                }else if(dir_x == -1 && last[0] - bnds.x[0] < ww){
+                    dir_x = 1;
+                    //bnds.x[0] += ww;
+                    dir = 'y';
+                    //console.log(bnds);
+                }
+            }else{
+                if(dir_y == 1 & bnds.y[1] - last[1] < wh){
+                    dir_y = -1;
+                    //bnds.y[1] -= wh;
+                    dir = 'x';
+                    //console.log(bnds);
+                }else if(dir_y == -1 && last[1] - bnds.y[0] < wh){
+                    dir_y = 1;
+                    //bnds.y[0] += wh;
+                    dir = 'x';
+                    //console.log(bnds);
+                }
+            }
+            x = dir == 'x' ? last[0] + (ww * dir_x) : last[0];
+            y = dir == 'y' ? last[1] + (wh * dir_y) : last[1];
+            if(i%10==0)
+                switchDir();
+            arr.push([x,y]);
+
+        }
+        obj.render();
+        // for(var i=0;i<arr.length;i++){
+
+        // }
+    }
+    Maze.prototype.render = function(){
+        var obj = this,
+            opacity = .2,
+            inc = 0,
+            block_count = 0;
+        var inter = setInterval(function(){
+            obj.drawBlock(obj.map_array[inc][0],obj.map_array[inc][1],opacity);
+            if(inc % 20 == 0)
+                opacity+=.0001;
+            inc++;
+            block_count++;
+            if(block_count > 1000){
+                //for(var j =0;j<100;j++){
+                    obj.block_nodes[0].remove();
+                    obj.block_nodes.splice(0,1);
+                //}
+
+            }
+            if(inc > obj.max_blocks){
+                clearInterval(inter);
+            }
+        },10)
+    }
+    Maze.prototype.drawBlock = function(x,y,opacity,color){
+        var obj = this,
+            block = document.createElement('div'),
+        color = typeof color != 'undefined' ? color : null;
+        block.className = 'maze';
+        block.style.left = x + 'px';
+        block.style.top = y + 'px';
+        block.style.opacity = opacity;
+        if(color)
+            block.style.backgroundColor = color;
+        document.body.appendChild(block);
+        obj.block_nodes.push(block);
+    }
+    var Hero = function(){
+        this.init();
+    }
+    Hero.prototype.init = function(){
+
+    }
+    var maze = new Maze();
+    var hero = new Hero();
+</script>
+</body>
+</html>
